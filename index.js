@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+require('dotenv').config()
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -7,12 +8,9 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// anindoah117
-// aotrvfHGDn5DSltQ
-
 
 const uri =
-  "mongodb+srv://anindoah117:aotrvfHGDn5DSltQ@clustera.xilruvy.mongodb.net/?retryWrites=true&w=majority";
+  `mongodb+srv://${process.env.TEX_ART}:${process.env.TEX_KEY}@clustera.xilruvy.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -27,6 +25,17 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const craftCollection = client.db('textileDB').collection('art&craft')
+
+    app.post('/crafts', async(req, res) => {
+        const newCraft = req.body;
+        console.log(newCraft)
+        const result = await craftCollection.insertOne(newCraft);
+        res.send(result);
+    })
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
