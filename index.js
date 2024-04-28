@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-require ('dotenv').config()
+require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -8,9 +8,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
-const uri =
-  `mongodb+srv://${process.env.TEX_ART}:${process.env.TEX_KEY}@clustera.xilruvy.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.TEX_ART}:${process.env.TEX_KEY}@clustera.xilruvy.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -26,28 +24,49 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const craftCollection = client.db('textileDB').collection('art&craft')
+    const craftCollection = client.db("textileDB").collection("art&craft");
 
-    app.get('/crafts', async(req, res) => {
-        const cursor = craftCollection.find();
-        const result = await cursor.toArray();
-        res.send(result);
-    })
+    app.get("/crafts", async (req, res) => {
+      const cursor = craftCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
-    app.get('/crafts/:id', async(req, res) => {
+    app.get("/crafts/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await craftCollection.findOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
-    app.post('/crafts', async(req, res) => {
-        const newCraft = req.body;
-        console.log(newCraft)
-        const result = await craftCollection.insertOne(newCraft);
-        res.send(result);
-    })
+    app.post("/crafts", async (req, res) => {
+      const newCraft = req.body;
+      console.log(newCraft);
+      const result = await craftCollection.insertOne(newCraft);
+      res.send(result);
+    });
 
+    app.put("/crafts/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateCraft = req.body;
+      const craft = {
+        $set: {
+          itemName: updateCraft.itemName,
+          subcategory: updateCraft.subcategory,
+          description: updateCraft.description,
+          price: updateCraft.price,
+          rating: updateCraft.rating,
+          customization: updateCraft.customization,
+          processTime: updateCraft.processTime,
+          stock: updateCraft.stock,
+          photo: updateCraft.photo,
+        },
+      }
+      const result = await craftCollection.updateOne(filter, craft, options);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
